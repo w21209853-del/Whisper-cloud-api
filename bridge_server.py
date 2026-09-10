@@ -238,8 +238,20 @@ def transcribe_media_url(url: str, language: str = ""):
             "--fragment-retries", "5", "--retry-sleep", "1", url,
         ]
         cookies = (os.environ.get("YTDLP_COOKIES") or "").strip()
-        if cookies and os.path.isfile(cookies):
-            cmd[1:1] = ["--cookies", cookies]
+        cookies_path = None
+        if cookies:
+            if os.path.isfile(cookies):
+                # Already a path to a cookies.txt file on disk.
+                cookies_path = cookies
+            else:
+                # Cloud secrets (Render/HF Spaces) store the raw pasted
+                # cookies.txt content, not a path — write it to a temp file
+                # so yt-dlp's --cookies flag has something it can read.
+                cookies_path = os.path.join(td, "cookies.txt")
+                with open(cookies_path, "w", encoding="utf-8") as f:
+                    f.write(cookies)
+        if cookies_path:
+            cmd[1:1] = ["--cookies", cookies_path]
         try:
             proc = subprocess.run(cmd, check=False, timeout=int(os.environ.get("YTDLP_TIMEOUT", "3600")),
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
