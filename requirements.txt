@@ -1,3 +1,4 @@
 youtube-transcript-api>=1.0.0
 faster-whisper>=1.1.1
 yt-dlp>=2024.1.0
+curl_cffi>=0.7.1
